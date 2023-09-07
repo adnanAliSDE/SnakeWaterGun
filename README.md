@@ -1,4 +1,3 @@
-# swg_csproject
 # Snake, Water, Gun Game with Multithreading
 
 ## Introduction
