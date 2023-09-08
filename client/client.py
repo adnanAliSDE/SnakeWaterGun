@@ -1,14 +1,10 @@
 """
-This is an updated version of swg previously made during daysofpython 
+This is an updated version of swg previously made during 100daysofpython 
 """
-import auth
-import socket
 
-c = socket.socket()
 # Asking for options
 def play():
     print("I am play")
-
 
 def welcome():
     """Take user input for the option to continue next"""
@@ -41,13 +37,5 @@ def welcome():
             welcome()
 
 
-try:
-    c.connect(("localhost", 9090))
-    print("connected to localhost")
-    welcome()
-except:
-    print("Connection failed to server please restart the game")
-
 c.close()
-
 print("Disconnected")

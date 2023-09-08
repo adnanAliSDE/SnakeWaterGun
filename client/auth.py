@@ -1,4 +1,9 @@
+import connectivity
+
 def is_valid(username):
+
+    '''Will check the db for available username'''
+
     if username != "computer":
         return True
     else:
@@ -18,4 +23,12 @@ def createAccount():
     password = input("Enter your password")
 
 def handleLogin():
-    print("I am handleLogin")
+    username=input('Enter your username')
+    password=input('Enter your password')
+
+    data={
+        "username":username,
+        "password":password
+    }
+    
+    connectivity.send_to_server('login',data)
