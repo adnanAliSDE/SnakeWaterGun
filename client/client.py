@@ -1,10 +1,26 @@
 """
 This is an updated version of swg previously made during 100daysofpython 
 """
+import auth
+import connectivity
+
+conn = None
+while True:
+    HOST = input("Enter server address: ")
+    PORT = int(input("Enter PORT no: "))
+    conn = connectivity.connect_to_server(HOST, PORT)
+    if conn:
+        break
+    else:
+        print("Connection to server failed Please try again\n")
+
+print("Connected successfully")
+
 
 # Asking for options
 def play():
     print("I am play")
+
 
 def welcome():
     """Take user input for the option to continue next"""
@@ -23,7 +39,13 @@ def welcome():
             auth.createAccount()
 
         case 2:
-            auth.handleLogin()
+            is_logged_in = auth.handleLogin()
+            if is_logged_in:
+                play()
+
+            else:
+                print("Please try to login again")
+                auth.handleLogin()
 
         case 3:
             play()
@@ -36,6 +58,6 @@ def welcome():
             print("Please provide a valid choice")
             welcome()
 
-
-c.close()
+welcome()
+conn.close()
 print("Disconnected")
