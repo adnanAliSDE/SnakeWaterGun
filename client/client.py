@@ -18,8 +18,30 @@ print("Connected successfully")
 
 
 # Asking for options
-def play():
-    print("I am play")
+options = ["snake", "water", "gun"]
+
+
+modes = ["PvP", "Computer"]
+
+
+def handlePlay():
+    for index, mode in enumerate(modes):
+        print(f"{index}: {mode}")
+
+    mode = int(input("Enter your choice: "))
+
+    if mode == 1:
+        opponent = "computer"
+
+    else:
+        opponent = input("Enter the username of the opponent: ")
+        status, res = connectivity.send_data("play", data)
+
+    for index, option in enumerate(options):
+        print(f"{index}: {option}")
+    inp = int(input("Enter your choice: "))
+    data = {"inp": inp}
+    status, res = connectivity.send_data("play", inp)
 
 
 def welcome():
@@ -41,14 +63,14 @@ def welcome():
         case 2:
             is_logged_in = auth.handleLogin()
             if is_logged_in:
-                play()
+                handlePlay()
 
             else:
                 print("Please try to login again")
                 auth.handleLogin()
 
         case 3:
-            play()
+            handlePlay()
 
         case 4:
             print("Thank you for choosing to play SnakeWaterGun")
@@ -57,6 +79,7 @@ def welcome():
         case _:
             print("Please provide a valid choice")
             welcome()
+
 
 welcome()
 conn.close()

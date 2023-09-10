@@ -43,4 +43,8 @@ def handleLogin():
     is_authenticated = False
     _, res = connectivity.send_to_server("login", data)
     is_authenticated = bool(res)
-    return is_authenticated
+
+    if is_authenticated:
+        return is_authenticated
+    else:
+        handleLogin()
