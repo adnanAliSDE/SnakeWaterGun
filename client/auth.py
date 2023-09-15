@@ -1,6 +1,5 @@
 import connectivity
 
-
 def is_valid(username):
     """Will check the db for available username"""
     is_available = False
@@ -32,7 +31,6 @@ def createAccount():
     else:
         print(res)
         createAccount()
-
 
 def handleLogin():
     username = input("Enter your username")

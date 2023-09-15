@@ -20,4 +20,3 @@ FOREIGN KEY (player_1) references users(id),
 FOREIGN KEY (player_2) references users(id)
 );
 
-DESC users;
