@@ -3,7 +3,12 @@ import threading
 import game
 
 s = socket.socket()
-s.bind(("0.0.0.0", 9090))
+
+try:
+    s.bind(("0.0.0.0", 9090))
+except OSError as e:
+    print(f"Error binding to the socket: {e}")
+    exit(1)
 
 s.listen(2)
 print("listening at port 9090")
@@ -15,7 +20,7 @@ class Game:
         self.usernames = []
         self.friend_choice = None
 
-    def is_client_mathed(self):
+    def is_client_matched(self):
         if len(self.clients)==2:
             return True
         else:
@@ -59,7 +64,7 @@ while True:
     conn.send("".encode())
 
     # 2-send alert
-    if g.is_client_mathed():
+    if g.is_client_matched():
         g.clients[0].send(f"Game started with {g.usernames[1]}\n".encode())
         g.clients[1].send(f"Game started with {g.usernames[0]}\n".encode())
         for c in g.clients:

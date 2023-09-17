@@ -5,7 +5,8 @@ def main():
     """
     Establishes a socket connection with a server, sends and receives messages, and allows the user to play a game by making choices and receiving game results.
     """
-    HOST = input("Enter server address: ")
+    # HOST = input("Enter server address: ")
+    HOST='localhost'
     PORT = 9090
 
     try:
@@ -44,9 +45,7 @@ def main():
         # Receive and print game result
         result = conn.recv(1024).decode()
         print(result)
-        print(result)
         break
-
 
 if __name__ == "__main__":
     main()
