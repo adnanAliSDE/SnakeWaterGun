@@ -1,4 +1,3 @@
-# 1-will listen
 import socket
 import threading
 import game
@@ -10,51 +9,60 @@ s.listen(2)
 print("listening at port 9090")
 
 
-clients = []
-usernames = []
-friend_choice = None
+class Game:
+    def __init__(self):
+        self.clients = []
+        self.usernames = []
+        self.friend_choice = None
 
+    def is_client_mathed(self):
+        if len(self.clients)==2:
+            return True
+        else:
+            return False
+
+g=Game()
 
 def handle_client(conn):
-    global friend_choice
     choice = conn.recv(1024).decode()
-    choice = int(choice)
+
+    g.choice = int(choice)
     win_status = 0
-    if friend_choice is not None:
-        win_status = game.checkwin(choice, friend_choice)
+    if g.friend_choice is not None:
+        win_status = game.checkwin(choice, g.friend_choice)
         if win_status == 0:
             broadcast("The game is draw")
 
         elif win_status == 1:
             conn.send(f"You won".encode())
-            clients.remove(conn)
+            g.clients.remove(conn)
             broadcast("You lost")
-            print(username[0], "lost")
+            print(g.usernames[0], "lost")
 
     else:
-        friend_choice = choice
+        g.friend_choice = choice
 
 
 def broadcast(msg):
-    for client in clients:
+    for client in g.clients:
         client.send(str(msg).encode())
 
 
 while True:
     conn, addr = s.accept()
-    clients.append(conn)
+    g.clients.append(conn)
     username = conn.recv(1024).decode()
-    usernames.append(username)
+    g.usernames.append(username)
 
     conn.send(f"Welcome {username} to SWG\n".encode())
     conn.send("Please wait until your friend joins\n".encode())
     conn.send("".encode())
 
     # 2-send alert
-    if len(clients) == 2:
-        clients[0].send(f"Game started with {usernames[1]}\n".encode())
-        clients[1].send(f"Game started with {usernames[0]}\n".encode())
-        for c in clients:
+    if g.is_client_mathed():
+        g.clients[0].send(f"Game started with {g.usernames[1]}\n".encode())
+        g.clients[1].send(f"Game started with {g.usernames[0]}\n".encode())
+        for c in g.clients:
             client_handler = threading.Thread(target=handle_client, args=(c,))
             client_handler.start()
     else:
