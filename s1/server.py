@@ -1,6 +1,6 @@
 import socket
 import threading
-import game
+import s1.game as game
 
 s = socket.socket()
 
