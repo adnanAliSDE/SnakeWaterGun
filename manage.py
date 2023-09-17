@@ -4,12 +4,12 @@ import time
 
 def start_server():
     print("Starting the server...")
-    os.system("start cmd /k python server.py")
+    os.system("start cmd /k python ./server/server.py")
 
 
 def start_client(username):
     print(f"Starting client for {username}...")
-    os.system(f"start cmd /k python client.py && echo localhost && echo {username}")
+    os.system(f"start cmd /k python ./client/client.py && echo localhost && echo {username}")
 
 
 def main():

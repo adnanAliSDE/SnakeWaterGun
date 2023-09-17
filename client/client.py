@@ -1,86 +1,59 @@
-"""
-This is an updated version of swg previously made during 100daysofpython 
-"""
-import auth
-import connectivity
+import socket
 
-conn = None
-while True:
+
+def updateScore(points):
+    score = 0
+    with open("score.txt", "w+") as f:
+        if f.read() != "":
+            score = int(f.read())
+        score += points
+        f.write(str(score))
+
+    return score
+
+
+def main():
+    """
+    Establishes a socket connection with a server, sends and receives messages, and allows the user to play a game by making choices and receiving game results.
+    """
     HOST = input("Enter server address: ")
-    PORT = int(input("Enter PORT no: "))
-    conn = connectivity.connect_to_server(HOST, PORT)
-    if conn:
-        break
-    else:
-        print("Connection to server failed Please try again\n")
+    PORT = 9090
 
-print("Connected successfully")
+    try:
+        # Create a socket connection to the server
+        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        conn.connect((HOST, PORT))
+    except Exception as e:
+        print(f"An error occurred while connecting to the server: {e}")
+        return
 
+    # Get user input for username
+    username = input("Enter your username: ")
+    conn.send(username.encode())
 
-# Asking for options
-options = ["snake", "water", "gun"]
+    # Wait for the game to start
+    msg = ""
+    while not msg.startswith("Game started with"):
+        print("Waiting for the message")
+        msg = conn.recv(1024).decode()
+        print(msg)
 
+    options = {0: "Snake", 1: "Water", 2: "Gun"}
 
-modes = ["PvP", "Computer"]
+    # Get user's choice
+    print("Enter your choice:")
+    for key, value in options.items():
+        print(f"{key}: {value}")
+    choice = input("Your choice (0/1/2): ")
+    # Send the choice to the server
+    conn.send(choice.encode())
 
-
-def handlePlay():
-    for index, mode in enumerate(modes):
-        print(f"{index}: {mode}")
-
-    mode = int(input("Enter your choice: "))
-
-    if mode == 1:
-        opponent = "computer"
-
-    else:
-        opponent = input("Enter the username of the opponent: ")
-        status, res = connectivity.send_data("play", data)
-
-    for index, option in enumerate(options):
-        print(f"{index}: {option}")
-    inp = int(input("Enter your choice: "))
-    data = {"inp": inp}
-    status, res = connectivity.send_data("play", inp)
-
-
-def welcome():
-    """Take user input for the option to continue next"""
-
-    print("Choose an option to continue\n")
-    print("1- Create an account")
-    print("2- Login")
-    print("3- Play as guest")
-    print("4- Exit\n")
-
-    userInp = int(input("Please select your choice: "))
-    print(userInp)
-
-    match userInp:
-        case 1:
-            auth.createAccount()
-
-        case 2:
-            is_logged_in = auth.handleLogin()
-            if is_logged_in:
-                handlePlay()
-
-            else:
-                print("Please try to login again")
-                auth.handleLogin()
-
-        case 3:
-            handlePlay()
-
-        case 4:
-            print("Thank you for choosing to play SnakeWaterGun")
-            return
-
-        case _:
-            print("Please provide a valid choice")
-            welcome()
+    # Receive and print game result
+    result = conn.recv(1024).decode()
+    print(result)
+    score = updateScore(0)
+    print("Your score: ", score)
 
 
-welcome()
-conn.close()
-print("Disconnected")
+if __name__ == "__main__":
+    main()
