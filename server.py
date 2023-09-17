@@ -21,17 +21,19 @@ class Game:
         self.friend_choice = None
 
     def is_client_matched(self):
-        if len(self.clients)==2:
+        if len(self.clients) % 2 == 0:
             return True
         else:
             return False
 
-g=Game()
+
+g = Game()
+
 
 def handle_client(conn):
     choice = conn.recv(1024).decode()
+    choice = int(choice)
 
-    g.choice = int(choice)
     win_status = 0
     if g.friend_choice is not None:
         win_status = game.checkwin(choice, g.friend_choice)
@@ -49,6 +51,7 @@ def handle_client(conn):
 
 
 def broadcast(msg):
+    print("Bradcasting: ", msg)
     for client in g.clients:
         client.send(str(msg).encode())
 
@@ -65,10 +68,14 @@ while True:
 
     # 2-send alert
     if g.is_client_matched():
+        print("Matched")
         g.clients[0].send(f"Game started with {g.usernames[1]}\n".encode())
         g.clients[1].send(f"Game started with {g.usernames[0]}\n".encode())
         for c in g.clients:
             client_handler = threading.Thread(target=handle_client, args=(c,))
             client_handler.start()
+        print("Message sent and handling threads")
     else:
         continue
+
+# s.close()

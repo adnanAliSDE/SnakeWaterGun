@@ -1,12 +1,23 @@
 import socket
 
 
+def updateScore(points):
+    score = 0
+    with open("score.txt", "w+") as f:
+        if f.read() != "":
+            score = int(f.read())
+        score += points
+        f.write(str(score))
+
+    return score
+
+
 def main():
     """
     Establishes a socket connection with a server, sends and receives messages, and allows the user to play a game by making choices and receiving game results.
     """
-    # HOST = input("Enter server address: ")
-    HOST='localhost'
+    HOST = input("Enter server address: ")
+    HOST = "localhost"
     PORT = 9090
 
     try:
@@ -22,30 +33,28 @@ def main():
     conn.send(username.encode())
 
     # Wait for the game to start
-    for _ in range(2):
+    msg = ""
+    while not msg.startswith("Game started with"):
+        print("Waiting for the message")
         msg = conn.recv(1024).decode()
         print(msg)
 
-    options = {
-        0: "Snake",
-        1: "Water",
-        2: "Gun"
-    }
+    options = {0: "Snake", 1: "Water", 2: "Gun"}
 
-    while True:
-        # Get user's choice
-        print("Enter your choice:")
-        for key, value in options.items():
-            print(f"{key}: {value}")
-        choice = input("Your choice (0/1/2): ")
+    # Get user's choice
+    print("Enter your choice:")
+    for key, value in options.items():
+        print(f"{key}: {value}")
+    choice = input("Your choice (0/1/2): ")
+    # Send the choice to the server
+    conn.send(choice.encode())
 
-        # Send the choice to the server
-        conn.send(choice.encode())
+    # Receive and print game result
+    result = conn.recv(1024).decode()
+    print(result)
+    score = updateScore(0)
+    print("Your score: ", score)
 
-        # Receive and print game result
-        result = conn.recv(1024).decode()
-        print(result)
-        break
 
 if __name__ == "__main__":
     main()
