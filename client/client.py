@@ -33,8 +33,7 @@ def main():
 
     # Wait for the game to start
     msg = ""
-    while not msg.startswith("Game started with"):
-        print("Waiting for the message")
+    while not (msg.startswith("Game started with") or "Game started with" in msg):
         msg = conn.recv(1024).decode()
         print(msg)
 
@@ -44,7 +43,7 @@ def main():
     print("Enter your choice:")
     for key, value in options.items():
         print(f"{key}: {value}")
-    choice = input("Your choice (0/1/2): ")
+    choice = int(input("Your choice (0/1/2): "))
     # Send the choice to the server
     conn.send(choice.encode())
 
