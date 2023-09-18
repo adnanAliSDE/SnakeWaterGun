@@ -6,11 +6,11 @@ def updateScore(points):
     with open("score.txt", "w+") as f:
         if f.read() != "":
             score = int(f.read())
+
         score += points
         f.write(str(score))
 
     return score
-
 
 def main():
     """
@@ -33,9 +33,11 @@ def main():
 
     # Wait for the game to start
     msg = ""
-    while not (msg.startswith("Game started with") or "Game started with" in msg):
+    while True:
         msg = conn.recv(1024).decode()
         print(msg)
+        if ("Game started with" in msg):
+            break
 
     options = {0: "Snake", 1: "Water", 2: "Gun"}
 
@@ -45,7 +47,7 @@ def main():
         print(f"{key}: {value}")
     choice = int(input("Your choice (0/1/2): "))
     # Send the choice to the server
-    conn.send(choice.encode())
+    conn.send(str(choice).encode())
 
     # Receive and print game result
     result = conn.recv(1024).decode()

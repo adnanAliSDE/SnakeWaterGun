@@ -10,7 +10,7 @@ except OSError as e:
     print(f"Error binding to the socket: {e}")
     exit(1)
 
-s.listen(2)
+s.listen(10)
 print("listening at port 9090")
 
 
@@ -42,6 +42,12 @@ def handle_client(conn):
 
         elif win_status == 1:
             conn.send(f"You won".encode())
+            g.clients.remove(conn)
+            broadcast("You lost")
+            print(g.usernames[0], "lost")
+        
+        else:
+            conn.send(f"You lost".encode())
             g.clients.remove(conn)
             broadcast("You lost")
             print(g.usernames[0], "lost")
