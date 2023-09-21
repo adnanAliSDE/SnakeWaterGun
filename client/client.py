@@ -1,16 +1,15 @@
 import socket
 
-
 def updateScore(points):
     score = 0
     with open("score.txt", "w+") as f:
         if f.read() != "":
             score = int(f.read())
-
         score += points
         f.write(str(score))
 
     return score
+
 
 def main():
     """
@@ -33,11 +32,9 @@ def main():
 
     # Wait for the game to start
     msg = ""
-    while True:
+    while "Game started with" not in msg:
         msg = conn.recv(1024).decode()
         print(msg)
-        if ("Game started with" in msg):
-            break
 
     options = {0: "Snake", 1: "Water", 2: "Gun"}
 
@@ -45,15 +42,21 @@ def main():
     print("Enter your choice:")
     for key, value in options.items():
         print(f"{key}: {value}")
-    choice = int(input("Your choice (0/1/2): "))
+
+    choice = input("Your choice (0/1/2): ")
     # Send the choice to the server
-    conn.send(str(choice).encode())
+    conn.send(choice.encode())
 
     # Receive and print game result
     result = conn.recv(1024).decode()
     print(result)
-    score = updateScore(0)
+
+    score=0
+    if result=='You won':
+        score+=1
+    new_score = updateScore(score)
     print("Your score: ", score)
+    print("Total score earned: ", new_score)
 
 
 if __name__ == "__main__":

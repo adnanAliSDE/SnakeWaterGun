@@ -13,6 +13,9 @@ except OSError as e:
 s.listen(10)
 print("listening at port 9090")
 
+class Player:
+	def __init__(self,conn,addr,username):
+		pass
 
 class Game:
     def __init__(self):
@@ -39,18 +42,30 @@ def handle_client(conn):
         win_status = game.checkwin(choice, g.friend_choice)
         if win_status == 0:
             broadcast("The game is draw")
+            return
 
         elif win_status == 1:
+            index=g.clients.index(conn)
             conn.send(f"You won".encode())
-            g.clients.remove(conn)
+
+            g.clients.pop(index)
+            g.usernames.pop(index)
+
             broadcast("You lost")
             print(g.usernames[0], "lost")
-        
-        else:
+            return
+
+        elif True:
+            index=g.clients.index(conn)
             conn.send(f"You lost".encode())
-            g.clients.remove(conn)
-            broadcast("You lost")
-            print(g.usernames[0], "lost")
+
+            username=g.usernames[index]
+            g.clients.pop(index)
+            g.usernames.pop(index)
+
+            broadcast("You won")
+            print(username, "lost")
+            return
 
     else:
         g.friend_choice = choice
@@ -72,16 +87,16 @@ while True:
     conn.send("Please wait until your friend joins\n".encode())
     conn.send("".encode())
 
+
     # 2-send alert
     if g.is_client_matched():
         print("Matched")
         g.clients[0].send(f"Game started with {g.usernames[1]}\n".encode())
         g.clients[1].send(f"Game started with {g.usernames[0]}\n".encode())
+
         for c in g.clients:
             client_handler = threading.Thread(target=handle_client, args=(c,))
             client_handler.start()
         print("Message sent and handling threads")
     else:
         continue
-
-# s.close()
