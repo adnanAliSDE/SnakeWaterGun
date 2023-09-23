@@ -1,6 +1,7 @@
 import socket
 import threading
-import game
+from algorithms import game
+from algorithms import matching
 
 s = socket.socket()
 
