@@ -1,12 +1,10 @@
 import threading
 
-options = ["snake", "water", "gun"]
 winCases = {
     (0, 2),
     (1, 0),
     (2, 1),
 }
-
 
 def checkwin(my_choice, friend_choice):
     """
@@ -41,50 +39,47 @@ class Player:
 
 class Game:
     def __init__(self,player1,player2):
-      self.players=[player1,player2]
-      self.friend_choice = None
+        self.players=[player1,player2]
+        self.friend_choice = None
 
     def broadcast(self,msg):
         for player in self.players:
             player.sendMsg(msg)
     
-    def removePlayer(self,player)
+    def removePlayer(self,player):
+        player_index=self.players.index(player)
+        self.players.pop(player_index)
+        return player_index
 
-
-def handle_client(g,player):
+def handle_client(g,player,lock):
     choice = int(player.recvMsg())
     win_status = 0
-    if g.friend_choice is not None: # expected bug
+    lock.acquire() # lock the game object score
+    if g.friend_choice is not None: # expected bug due to race condition
         win_status = checkwin(choice, g.friend_choice)
         if win_status == 0:
             g.broadcast("The game is draw")
             return
 
         elif win_status == 1:
-            index=g.players.index(player)
-            conn.send(f"You won".encode())
-
-            g.clients.pop(index)
-            g.usernames.pop(index)
-
-            broadcast("You lost")
-            print(g.usernames[0], "lost")
+            username=player.username
+            player.sendMsg("You won")
+            g.removePlayer(player)
+            g.players[0].sendMsg("You lost")
+            print(username, "won")
             return
 
         elif True:
-            index=g.clients.index(conn)
-            conn.send(f"You lost".encode())
-
-            username=g.usernames[index]
-            g.clients.pop(index)
-            g.usernames.pop(index)
-
-            broadcast("You won")
+            username=player.username
+            player.sendMsg("You lost")
+            g.removePlayer(player)
+            g.players[0].sendMsg("You won")
             print(username, "lost")
             return
 
     else:
         g.friend_choice = choice
+        lock.release()
 
 
 def broadcast(msg):
@@ -94,4 +89,25 @@ def broadcast(msg):
 
 
 def handleGame(g):
-    
+    """
+    Handle the game between two players.
+
+    Args:
+        g (Game): The game object containing the two players.
+    """
+    print("Game started")
+    g.player1.sendMsg(f"Game started with {g.player2.username}")
+    g.player2.sendMsg(f"Game started with {g.player1.username}")
+    lock = threading.Lock()
+    threads = []
+    for player in g.players:
+        thread = threading.Thread(target=handle_client, args=(g, player, lock))
+        thread.start()
+        threads.append(thread)
+
+    for thread in threads:
+        thread.join()
+
+    print("Game ended")
+    g.broadcast("Game ended")
+    g.broadcast("Waiting for other players")

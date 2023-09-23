@@ -14,9 +14,11 @@ except OSError as e:
 s.listen(10)
 print("listening at port 9090")
 
+# main logic
 
 
 
+# handling client connections
 while True:
     conn, addr = s.accept()
     g.clients.append(conn)
