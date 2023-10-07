@@ -25,37 +25,58 @@ def checkwin(my_choice, friend_choice):
         return -1
 
 class Player:
-    def __init__(self,conn,addr,username):
-	    self.conn=conn
-        self.addr=addr
-        self.username=username
+    id = 1
 
-    def sendMsg(self,msg):
-        conn.send(str(msg).encode())
+    def __init__(self, username, conn) -> None:
+        self.id = Player.id
+        Player.id += 1
+        self.username = username
+        self.conn = conn
+
+    def sendMsg(self, msg: str) -> bool:
+        self.conn.send(str(msg).encode())
+        return True
 
     def recvMsg(self):
-        msg=self.conn.recv(1024).decode()
+        msg = self.conn.recv(1024).decode()
         return msg
 
+
+
+# new class
 class Game:
-    def __init__(self,player1,player2):
-        self.players=[player1,player2]
+    id = 1
+    def __init__(self, player1, player2) -> None:
+        self.id = Game.id
+        Game.id += 1
+        self.players = [player1, player2]
         self.friend_choice = None
 
-    def broadcast(self,msg):
+
+    def broadcast(self, msg):
         for player in self.players:
             player.sendMsg(msg)
-    
-    def removePlayer(self,player):
-        player_index=self.players.index(player)
-        self.players.pop(player_index)
-        return player_index
 
+    def remove_player(self, player):
+        index=self.players.index(player)
+        self.players.remove(player)
+        return index
+    
+    def endGame(self):
+        self.broadcast("Game ended")
+        for player in self.players:
+            player.conn.close()
+
+        print(f"Game with id {self.id} ended")
+
+
+# handleClient
 def handle_client(g,player,lock):
     choice = int(player.recvMsg())
     win_status = 0
     lock.acquire() # lock the game object score
-    if g.friend_choice is not None: # expected bug due to race condition
+    if g.friend_choice is not None: 
+        lock.release() # lock the game object score
         win_status = checkwin(choice, g.friend_choice)
         if win_status == 0:
             g.broadcast("The game is draw")
@@ -64,50 +85,33 @@ def handle_client(g,player,lock):
         elif win_status == 1:
             username=player.username
             player.sendMsg("You won")
-            g.removePlayer(player)
+            g.remove_player(player)
             g.players[0].sendMsg("You lost")
             print(username, "won")
             return
 
-        elif True:
+        elif win_status == -1:
             username=player.username
             player.sendMsg("You lost")
-            g.removePlayer(player)
+            g.remove_player(player)
             g.players[0].sendMsg("You won")
             print(username, "lost")
             return
+    
+        g.endGame()
 
     else:
         g.friend_choice = choice
         lock.release()
 
+def handle_game(g):
+    lock=threading.Lock()
+    t1=threading.Thread(target=handle_client,args=(g,g.players[0],lock))
+    t2=threading.Thread(target=handle_client,args=(g,g.players[1],lock))
+    t1.start()
+    t2.start()
 
-def broadcast(msg):
-    print("Bradcasting: ", msg)
-    for client in g.clients:
-        client.send(str(msg).encode())
-
-
-def handleGame(g):
-    """
-    Handle the game between two players.
-
-    Args:
-        g (Game): The game object containing the two players.
-    """
-    print("Game started")
-    g.player1.sendMsg(f"Game started with {g.player2.username}")
-    g.player2.sendMsg(f"Game started with {g.player1.username}")
-    lock = threading.Lock()
-    threads = []
-    for player in g.players:
-        thread = threading.Thread(target=handle_client, args=(g, player, lock))
-        thread.start()
-        threads.append(thread)
-
-    for thread in threads:
-        thread.join()
+    t1.join()
+    t2.join()
 
     print("Game ended")
-    g.broadcast("Game ended")
-    g.broadcast("Waiting for other players")

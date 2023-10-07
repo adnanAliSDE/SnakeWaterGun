@@ -1,63 +1,59 @@
 import socket
 
-def updateScore(points):
-    score = 0
-    with open("score.txt", "w+") as f:
-        if f.read() != "":
-            score = int(f.read())
-        score += points
-        f.write(str(score))
+HOST = 'localhost'
+PORT = 8080
 
-    return score
+c=socket.socket()
 
-
-def main():
-    """
-    Establishes a socket connection with a server, sends and receives messages, and allows the user to play a game by making choices and receiving game results.
-    """
-    HOST = input("Enter server address: ")
-    PORT = 9090
-
-    try:
-        # Create a socket connection to the server
-        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        conn.connect((HOST, PORT))
-    except Exception as e:
-        print(f"An error occurred while connecting to the server: {e}")
-        return
-
-    # Get user input for username
-    username = input("Enter your username: ")
-    conn.send(username.encode())
-
-    # Wait for the game to start
-    msg = ""
-    while "Game started with" not in msg:
-        msg = conn.recv(1024).decode()
-        print(msg)
-
-    options = {0: "Snake", 1: "Water", 2: "Gun"}
-
-    # Get user's choice
-    print("Enter your choice:")
-    for key, value in options.items():
-        print(f"{key}: {value}")
-
-    choice = input("Your choice (0/1/2): ")
-    # Send the choice to the server
-    conn.send(choice.encode())
-
-    # Receive and print game result
-    result = conn.recv(1024).decode()
-    print(result)
-
-    score=0
-    if result=='You won':
-        score+=1
-    new_score = updateScore(score)
-    print("Your score: ", score)
-    print("Total score earned: ", new_score)
+try:
+    c.connect((HOST,PORT))
+except:
+    print("Connection error Please restart the game")
+    exit(0)
 
 
-if __name__ == "__main__":
-    main()
+# utilty functions
+def updateScore(msg):
+    gained_score=0
+    if msg=="You won":
+        gained_score=1
+
+    with open("score.txt",'w+') as f:
+        try:
+            score=int(f.read())
+            score+=gained_score
+            f.write(str(score))
+            return score
+
+        except:
+            f.write(str(gained_score))
+            return gained_score
+
+# main logic
+username = input("Enter username: ")
+c.send(username.encode())
+
+msg=''
+while True:
+    msg=c.recv(1024).decode()
+    print(msg)
+    if "Game started with" in msg:
+        break
+
+
+options=['Snake','Water','Gun']
+for i in range(3):
+    print(f"{i}. {options[i]}")
+    
+i=int(input("Enter choice (0/1/2): "))
+c.send(str(i).encode())
+
+winMsg=c.recv(1024).decode()
+
+score=updateScore(winMsg)
+print(f"Your total score: {score}")
+print(winMsg)
+print("Game ended")
+
+c.close()
+print("Connection closed")

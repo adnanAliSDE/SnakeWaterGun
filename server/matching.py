@@ -1,18 +1,31 @@
-'''matching algorithm prototype for matching the players
-input - player conn object and username
-process- matches the user
-output- create a game object and passes it to game handler
-'''
+'''Player Matching algroithm'''
+
+import threading
 import game
 
-# make empty players list
-players=[]
-def match(player: player)-> int:
-    if len(players)==0:
-        players.append(player)
-    else:
-        g=Game(player,players[0])
-        game.handleGame(g)
-        print("matched")
+players_queue = []
+games = []
 
-    return 200
+
+def match_players(player,lock):
+    lock.acquire()
+    if players_queue == []:
+        players_queue.append(player)
+        lock.release()
+        return
+
+    else:
+        p1 = players_queue[0]
+        g = game.Game(p1, player)
+        games.append(g.id)
+        print(f"{len(games)}th Game started")
+
+        players_queue.remove(p1)
+        lock.release()
+        player.sendMsg(f"Game started with {p1.username}")
+        p1.sendMsg(f"Game started with {player.username}")
+        games.append(g)
+
+        t = threading.Thread(target=game.handle_game, args=(g,))
+        t.daemon = True
+        t.start()
