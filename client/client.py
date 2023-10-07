@@ -1,7 +1,7 @@
 import socket
 
-HOST = 'localhost'
-PORT = 8080
+HOST = input("Enter server doamin/IP: ")
+PORT = int(input("Enter server port: "))
 
 c=socket.socket()
 
