@@ -18,7 +18,6 @@ def match_players(player,lock):
         p1 = players_queue[0]
         g = game.Game(p1, player)
         games.append(g.id)
-        print(f"{len(games)}th Game started")
 
         players_queue.remove(p1)
         lock.release()
