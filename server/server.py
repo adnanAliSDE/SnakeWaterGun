@@ -1,6 +1,4 @@
-"""
-take client and handle them
-"""
+"""take client and handle them"""
 import game
 import matching
 import threading

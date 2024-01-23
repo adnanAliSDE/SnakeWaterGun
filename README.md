@@ -1,5 +1,3 @@
-Certainly, here's the raw README.md file for your GitHub repository:
-
 # Snake Water Gun Game with Multithreading
 
 ## Overview
